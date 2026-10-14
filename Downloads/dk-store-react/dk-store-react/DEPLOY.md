@@ -2,13 +2,14 @@
 
 > These steps are written from how Render, Ubuntu, Caddy and pm2 normally work. They were **not** run against a real account, so check each host's current screens and prices.
 
-Vercel uses the included serverless API with a Neon Postgres database. Other hosts run the Node server and need persistent storage for the local SQLite database.
+Vercel uses the included serverless API with a Supabase Postgres database. Other hosts run the Node server and need persistent storage for the local SQLite database.
 
-## Option A: Vercel + Neon (free tiers have usage limits)
+## Option A: Vercel + Supabase
 
 1. In Vercel, open the DK Store project and set its **Root Directory** to the folder containing this `package.json` and `vercel.json` (`Downloads/dk-store-react/dk-store-react` in the current repository).
-2. In the Vercel project, open **Integrations** and add Neon. Create a database and connect it to this project. Make sure the integration provides `DATABASE_URL` to both **Production** and **Preview**.
-3. In **Settings > Environment Variables**, add:
+2. In Supabase, create a project on the Free plan. Open **Connect** and copy the **Transaction pooler** connection string.
+3. In Vercel **Settings > Environment Variables**, add `SUPABASE_DB_URL` with that connection string to **Production**. Use the transaction pooler string (not the direct connection string) for Vercel serverless functions.
+4. Add the following production variables:
    * `ADMIN_EMAIL`: the admin email you want to use.
    * `ADMIN_PASSWORD`: a new, strong password (at least 10 characters with letters and numbers). Do not reuse any password shared in chat.
    * `SESSION_SECRET`: a unique random value. Generate one locally with `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"` and paste it directly into Vercel; do not share it in chat or commit it.
@@ -17,10 +18,10 @@ Vercel uses the included serverless API with a Neon Postgres database. Other hos
    * `WHATSAPP`: your store contact number, country code first, without `+` or spaces.
    * `SITE_URL`: the production site origin (for example `https://dk-store-azm.vercel.app`), used for canonical links, the sitemap, reset links, and emails.
    * Optional email settings: `SMTP_USER`, `SMTP_PASS`, and `SHOP_EMAIL`.
-4. Redeploy the project after the database integration and environment variables are ready. Vercel builds `dist/` and deploys the `/api/*` function; the API creates the database schema and initial product catalog on first use.
-5. Open the production URL and test the store, `/admin.html`, an admin login, and an order. Then reload the dashboard to confirm the order is still there.
+5. Redeploy the project after the database and environment variables are ready. Vercel builds `dist/` and deploys the `/api/*` function; the API creates the database schema and initial product catalog on first use.
+6. Open the production URL and test the store, `/admin.html`, an admin login, and an order. Then reload the dashboard to confirm the order is still there.
 
-**Existing local data is not copied automatically.** The first Neon database starts with the default products and a fresh admin account from the environment variables; existing SQLite users, orders, and stock need a separate import if you want to keep them. Neon and Vercel free plans have limits and can change their terms.
+**Existing local data is not copied automatically.** The first Supabase database starts with the default products and a fresh admin account from the environment variables; existing SQLite users, orders, and stock need a separate import if you want to keep them. Supabase and Vercel free plans have limits and can change their terms.
 
 ## Share from your own computer (no hosting account needed)
 
@@ -52,7 +53,7 @@ ngrok http 3000                                      # prints https://something.
 3. Send the address to people. **Your computer must stay on**, the address changes every time you restart the tunnel, and anyone with the link can also see your admin login page. So: use a strong admin password, turn on **two-step login**, and stop the tunnel when you are finished. This is good for a demo or a weekend, not for a real business.
 
 ### 3. Permanently
-Use a host so the store is online even when your computer is off: see Vercel + Neon or Render below, and the section on your own `.com` / `.pk` address.
+Use a host so the store is online even when your computer is off: see Vercel + Supabase or Render below, and the section on your own `.com` / `.pk` address.
 
 ## Option B: Render (persistent SQLite disk)
 

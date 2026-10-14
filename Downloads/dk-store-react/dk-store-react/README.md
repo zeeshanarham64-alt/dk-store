@@ -3,7 +3,7 @@
 Online store with customer accounts, admin dashboard, stock, revenue and PDF receipts.
 
 * **Front end:** React 19 (store and admin pages) in `src/`
-* **Back end:** `dk-store.js` (SQLite locally; Neon Postgres for Vercel deployments)
+* **Back end:** `dk-store.js` (SQLite locally; Supabase Postgres for Vercel deployments)
 
 ## Easiest way to run it on Windows
 
@@ -25,7 +25,7 @@ Then follow the sections below if you want to change settings.
 
 ## Deploying to Vercel
 
-The project includes a Vercel API function and Neon database adapter. Follow [DEPLOY.md](./DEPLOY.md) for the required Neon integration and secure Vercel environment variables. Local SQLite data is not imported automatically.
+The project includes a Vercel API function and Supabase database adapter. Follow [DEPLOY.md](./DEPLOY.md) for Supabase setup and secure Vercel environment variables. Local SQLite data is not imported automatically.
 
 ## 1. Just run it (no install, no build)
 

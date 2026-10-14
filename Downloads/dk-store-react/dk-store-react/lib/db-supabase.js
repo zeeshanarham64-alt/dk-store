@@ -1,5 +1,5 @@
 const { AsyncLocalStorage } = require("node:async_hooks");
-const { Pool } = require("@neondatabase/serverless");
+const { Pool } = require("pg");
 
 const transactionClient = new AsyncLocalStorage();
 let pool;
@@ -54,7 +54,12 @@ function query(sql, params = []) {
 
 async function initialize() {
   if (!initialization) {
-    pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+    pool = new Pool({
+      connectionString: process.env.SUPABASE_DB_URL,
+      max: 3,
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
+    });
     initialization = (async () => {
       for (const statement of schema) await query(statement);
       await query("ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret TEXT");

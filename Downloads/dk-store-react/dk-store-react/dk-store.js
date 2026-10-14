@@ -124,10 +124,11 @@ return module.exports;
 // ============================ 1. DATABASE ============================
 __m["db"] = (function (module, require, __dirname) {
 const { AsyncLocalStorage } = require("node:async_hooks");
-if (process.env.DATABASE_URL) {
-  module.exports = require("./lib/db-neon");
+if (process.env.SUPABASE_DB_URL) {
+  module.exports = require("./lib/db-supabase");
   return module.exports;
 }
+if (process.env.VERCEL) throw new Error("SUPABASE_DB_URL must be configured before the Vercel API can start.");
 const { DatabaseSync } = require("node:sqlite");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -239,8 +240,8 @@ const SECURE = process.env.COOKIE_SECURE === "1";
 const COOKIE = SECURE ? "__Host-dk_session" : "dk_session"; // __Host- makes browsers refuse it unless it is https-only
 
 let SECRET = process.env.SESSION_SECRET;
-if (process.env.DATABASE_URL) {
-  if (!SECRET) throw new Error("SESSION_SECRET is required when DATABASE_URL is set.");
+if (process.env.SUPABASE_DB_URL) {
+  if (!SECRET) throw new Error("SESSION_SECRET is required when SUPABASE_DB_URL is set.");
 } else {
   const dir = process.env.DATA_DIR || path.join(__dirname, "..", "data");
   const keyFile = path.join(dir, "session.key");
@@ -289,7 +290,7 @@ const limiter = {
 
 async function ensureAdmin() {
   if (await db.prepare("SELECT 1 FROM users WHERE role='admin'").get()) return;
-  if (process.env.DATABASE_URL && !process.env.ADMIN_PASSWORD) throw new Error("ADMIN_PASSWORD is required to create the first admin account.");
+  if (process.env.SUPABASE_DB_URL && !process.env.ADMIN_PASSWORD) throw new Error("ADMIN_PASSWORD is required to create the first admin account.");
   const email = (process.env.ADMIN_EMAIL || "admin@dkstore.local").toLowerCase();
   const generated = !process.env.ADMIN_PASSWORD;
   const pw = process.env.ADMIN_PASSWORD || crypto.randomBytes(12).toString("base64url");
@@ -862,7 +863,6 @@ setInterval(() => hits.clear(), 60000).unref();
 let appReady;
 function initializeApp() {
   if (!appReady) appReady = (async () => {
-    if (process.env.VERCEL && !process.env.DATABASE_URL) throw new Error("DATABASE_URL must be configured before the Vercel API can start.");
     await db.initialize();
     await auth.ensureAdmin();
   })().catch((error) => { appReady = null; throw error; });
